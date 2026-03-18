@@ -1,0 +1,8 @@
+flask
+flask-cors
+groq
+python-dotenv
+requests
+edge-tts
+open-interpreter
+pyngrok
