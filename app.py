@@ -421,22 +421,9 @@ if __name__ == "__main__":
     except:
         local_ip = "???"
 
-    # ngrok HTTPS (micro téléphone)
-    ngrok_url = None
-    try:
-        from pyngrok import ngrok as _ngrok
-        tunnel    = _ngrok.connect(7860, bind_tls=True)
-        ngrok_url = tunnel.public_url
-    except Exception:
-        pass
-
     mode = "🎭 D-ID avatar" if DID_API_KEY else "🔊 audio seul"
     print(f"🃏 Joker Assistant — VERSION GRATUITE (Groq + Edge-TTS)")
     print(f"   PC          → http://localhost:7860")
     print(f"   Téléphone   → http://{local_ip}:7860  (WiFi, sans micro)")
-    if ngrok_url:
-        print(f"   📱 HTTPS    → {ngrok_url}  (micro activé ✅)")
-    else:
-        print(f"   📱 HTTPS    → pip install pyngrok pour activer le micro")
     print(f"   Mode: {mode}")
     app.run(host="0.0.0.0", port=7860, debug=False)
