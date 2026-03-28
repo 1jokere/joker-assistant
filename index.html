@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🃏 Joker Assistant</title>
+  <style>
+    :root {
+      --green:  #39ff14;
+      --purple: #8b00ff;
+      --dark:   #0a0a0a;
+      --card:   #111111;
+      --border: #2a2a2a;
+      --text:   #e0e0e0;
+      --muted:  #666;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      width: 100%;
+      max-width: 800px;
+      padding: 24px 16px 12px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: var(--green);
+      letter-spacing: 2px;
+      text-shadow: 0 0 18px var(--green);
+    }
+
+    header p.subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    /* ─── AVATAR ─── */
+    #avatar-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin: 12px auto;
+    }
+
+    #avatar-img {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 3px solid var(--purple);
+      object-fit: cover;
+      box-shadow: 0 0 24px var(--purple);
+      display: block;
+    }
+
+    #avatar-video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--green);
+      display: none;
+    }
+
+    /* ─── TOGGLES ─── */
+    .toggles {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 8px 0 4px;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-label input[type="checkbox"] {
+      accent-color: var(--green);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* ─── STATUS ─── */
+    #status-bar {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 4px 0 8px;
+      min-height: 18px;
+      text-align: center;
+    }
+
+    /* ─── CHAT ─── */
+    #chat-box {
+      width: 100%;
+      max-width: 800px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      line-height: 1.55;
+      font-size: 0.93rem;
+      word-break: break-word;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: #1a1a2e;
+      border: 1px solid var(--purple);
+      color: #ccc;
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: #0f1f0f;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-style: italic;
+      white-space: pre-wrap;
+    }
+
+    .msg.action {
+      align-self: flex-start;
+      background: #1a0f00;
+      border: 1px solid #ff6600;
+      color: #ff9933;
+      font-size: 0.82rem;
+      max-width: 90%;
+    }
+
+    .msg.system {
+      align-self: center;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    /* ─── CONFIRM BANNER ─── */
+    #confirm-banner {
+      display: none;
+      width: 100%;
+      max-width: 800px;
+      background: #1a0800;
+      border: 1px solid #ff4400;
+      padding: 10px 16px;
+      margin: 0 0 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #ffaa00;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #confirm-banner .confirm-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    #confirm-banner button {
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+
+    #confirm-yes { background: #ff4400; color: #fff; }
+    #confirm-no  { background: #333; color: #ccc; }
+
+    /* ─── INPUT AREA ─── */
+    #input-area {
+      width: 100%;
+      max-width: 800px;
+      padding: 10px 16px 20px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    #user-input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 10px 14px;
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      min-height: 44px;
+      transition: border-color 0.2s;
+    }
+
+    #user-input:focus { border-color: var(--green); }
+
+    button.icon-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1.2rem;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      line-height: 1;
+      height: 44px;
+    }
+
+    button.icon-btn:hover { border-color: var(--green); color: var(--green); }
+    button.icon-btn.active { border-color: #ff4444; color: #ff4444; }
+    button.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ─── LOADING DOTS ─── */
+    .dots::after {
+      content: '';
+      animation: dots 1.2s steps(3, end) infinite;
+    }
+
+    @keyframes dots {
+      0%   { content: '.'; }
+      33%  { content: '..'; }
+      66%  { content: '...'; }
+      100% { content: ''; }
+    }
+
+    /* ─── SCROLLBAR ─── */
+    #chat-box::-webkit-scrollbar { width: 4px; }
+    #chat-box::-webkit-scrollbar-track { background: transparent; }
+    #chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .msg { max-width: 92%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🃏 Joker Assistant</h1>
+    <p class="subtitle">Groq · Llama-3.3-70b · Edge-TTS · D-ID</p>
+  </header>
+
+  <!-- Avatar -->
+  <div id="avatar-wrap">
+    <img id="avatar-img" src="/images/joker-photo.jpg"
+         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Smiley_from_Another_Yellow_Smiley_Face.png/120px-Smiley_from_Another_Yellow_Smiley_Face.png'"
+         alt="Joker" />
+    <video id="avatar-video" autoplay playsinline></video>
+  </div>
+
+  <!-- Toggles -->
+  <div class="toggles">
+    <label class="toggle-label">
+      <input type="checkbox" id="toggle-tts" checked />
+      🔊 Voix (TTS)
+    </label>
+    <label class="toggle-label">
+      <input type="checkbox" id="toggle-did" />
+      🎬 Avatar D-ID
+    </label>
+    <label class="toggle-label">
+      <input type="checkbox" id="toggle-auto" checked />
+      ↩ Envoi auto (Entrée)
+    </label>
+  </div>
+
+  <!-- Status -->
+  <div id="status-bar">Initialisation...</div>
+
+  <!-- Chat -->
+  <div id="chat-box"></div>
+
+  <!-- Confirm banner -->
+  <div id="confirm-banner">
+    <span id="confirm-text">Action sensible détectée.</span>
+    <div class="confirm-btns">
+      <button id="confirm-yes">✅ Confirmer</button>
+      <button id="confirm-no">❌ Annuler</button>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div id="input-area">
+    <textarea id="user-input" rows="1" placeholder="Parle-moi, tout m'amuse…"></textarea>
+    <button class="icon-btn" id="btn-mic" title="Microphone">🎤</button>
+    <button class="icon-btn" id="btn-send" title="Envoyer">➤</button>
+    <button class="icon-btn" id="btn-clear" title="Effacer l'historique">🗑</button>
+  </div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const chatBox      = document.getElementById('chat-box');
+const inputEl      = document.getElementById('user-input');
+const statusBar    = document.getElementById('status-bar');
+const btnMic       = document.getElementById('btn-mic');
+const btnSend      = document.getElementById('btn-send');
+const btnClear     = document.getElementById('btn-clear');
+const toggleTTS    = document.getElementById('toggle-tts');
+const toggleDID    = document.getElementById('toggle-did');
+const toggleAuto   = document.getElementById('toggle-auto');
+const confirmBanner= document.getElementById('confirm-banner');
+const confirmText  = document.getElementById('confirm-text');
+const confirmYes   = document.getElementById('confirm-yes');
+const confirmNo    = document.getElementById('confirm-no');
+const avatarImg    = document.getElementById('avatar-img');
+const avatarVideo  = document.getElementById('avatar-video');
+
+let isRecording   = false;
+let mediaRecorder = null;
+let audioChunks   = [];
+let pendingAction = null;
+let currentAudio  = null;
+
+/* ═══════════════════════════════════════════
+   STATUS CHECK
+═══════════════════════════════════════════ */
+async function checkStatus() {
+  try {
+    const r = await fetch('/status');
+    const d = await r.json();
+    statusBar.textContent = `✅ ${d.model} | TTS: ${d.tts} | OI: ${d.open_interpreter ? '✅' : '❌'} | D-ID: ${d.did_avatar ? '✅' : '❌'}`;
+  } catch {
+    statusBar.textContent = '⚠️ Impossible de contacter le serveur.';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MESSAGES
+═══════════════════════════════════════════ */
+function addMsg(text, type = 'bot') {
+  const el = document.createElement('div');
+  el.className = `msg ${type}`;
+  el.textContent = text;
+  chatBox.appendChild(el);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return el;
+}
+
+function addLoading() {
+  const el = document.createElement('div');
+  el.className = 'msg bot dots';
+  el.textContent = 'Joker réfléchit';
+  chatBox.appendChild(el);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return el;
+}
+
+/* ═══════════════════════════════════════════
+   AUDIO
+═══════════════════════════════════════════ */
+function playAudio(url) {
+  if (!toggleTTS.checked) return;
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  currentAudio = new Audio(url);
+  currentAudio.play().catch(() => {});
+}
+
+/* ═══════════════════════════════════════════
+   D-ID VIDEO
+═══════════════════════════════════════════ */
+function showVideo(url) {
+  avatarVideo.src = url;
+  avatarVideo.style.display = 'block';
+  avatarImg.style.display   = 'none';
+  avatarVideo.play().catch(() => {});
+  avatarVideo.onended = () => {
+    avatarVideo.style.display = 'none';
+    avatarImg.style.display   = 'block';
+    avatarVideo.src = '';
+  };
+}
+
+/* ═══════════════════════════════════════════
+   CONFIRM
+═══════════════════════════════════════════ */
+function showConfirm(desc, cmd) {
+  pendingAction = cmd;
+  confirmText.textContent = `⚠️ Action sensible : "${desc}" — confirmer ?`;
+  confirmBanner.style.display = 'flex';
+}
+
+confirmYes.onclick = async () => {
+  confirmBanner.style.display = 'none';
+  if (!pendingAction) return;
+  try {
+    const r = await fetch('/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: pendingAction, confirmed: true })
+    });
+    const d = await r.json();
+    addMsg(`⚙️ ${d.result || d.error}`, 'action');
+  } catch { addMsg('Erreur lors de l\'action.', 'action'); }
+  pendingAction = null;
+};
+
+confirmNo.onclick = () => {
+  confirmBanner.style.display = 'none';
+  pendingAction = null;
+  addMsg('Action annulée.', 'system');
+};
+
+/* ═══════════════════════════════════════════
+   SEND MESSAGE
+═══════════════════════════════════════════ */
+async function sendMessage(text) {
+  if (!text.trim()) return;
+  addMsg(text, 'user');
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  btnSend.disabled = true;
+
+  const loader = addLoading();
+
+  try {
+    const r = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, use_did: toggleDID.checked })
+    });
+    const d = await r.json();
+    loader.remove();
+
+    if (d.error) { addMsg(`❌ ${d.error}`, 'system'); return; }
+
+    addMsg(d.text, 'bot');
+
+    if (d.audio_url)  playAudio(d.audio_url);
+    if (d.video_url)  showVideo(d.video_url);
+
+    if (d.open_url) {
+      addMsg(`🌐 Ouverture : ${d.open_url}`, 'action');
+      window.open(d.open_url, '_blank');
+    }
+
+    if (d.needs_confirm && d.action_description) {
+      showConfirm(d.action_description, d.action_description);
+    }
+
+    if (d.action_result) {
+      addMsg(`⚙️ ${d.action_result}`, 'action');
+    }
+
+  } catch (err) {
+    loader.remove();
+    addMsg('❌ Erreur réseau.', 'system');
+  } finally {
+    btnSend.disabled = false;
+    inputEl.focus();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   INPUT EVENTS
+═══════════════════════════════════════════ */
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+});
+
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey && toggleAuto.checked) {
+    e.preventDefault();
+    sendMessage(inputEl.value);
+  }
+});
+
+btnSend.addEventListener('click', () => sendMessage(inputEl.value));
+
+/* ═══════════════════════════════════════════
+   CLEAR
+═══════════════════════════════════════════ */
+btnClear.addEventListener('click', async () => {
+  await fetch('/clear', { method: 'POST' }).catch(() => {});
+  chatBox.innerHTML = '';
+  addMsg('Historique effacé. Hehehe…', 'system');
+});
+
+/* ═══════════════════════════════════════════
+   MICROPHONE
+═══════════════════════════════════════════ */
+btnMic.addEventListener('click', async () => {
+  if (isRecording) {
+    mediaRecorder?.stop();
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus' : 'audio/webm';
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    audioChunks   = [];
+
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+    mediaRecorder.onstop = async () => {
+      isRecording = false;
+      btnMic.classList.remove('active');
+      btnMic.title = 'Microphone';
+      stream.getTracks().forEach(t => t.stop());
+
+      const blob    = new Blob(audioChunks, { type: mimeType });
+      const formData = new FormData();
+      formData.append('audio', blob, 'rec.webm');
+
+      statusBar.textContent = '🎙️ Transcription en cours…';
+      try {
+        const r = await fetch('/transcribe', { method: 'POST', body: formData });
+        const d = await r.json();
+        if (d.text) {
+          inputEl.value = d.text;
+          statusBar.textContent = '✅ Transcription OK';
+          sendMessage(d.text);
+        } else {
+          statusBar.textContent = `⚠️ ${d.error || 'Transcription vide'}`;
+        }
+      } catch {
+        statusBar.textContent = '❌ Erreur transcription';
+      }
+    };
+
+    mediaRecorder.start();
+    isRecording = true;
+    btnMic.classList.add('active');
+    btnMic.title = 'Arrêter l\'enregistrement';
+    statusBar.textContent = '🔴 Enregistrement…';
+
+  } catch (err) {
+    statusBar.textContent = `❌ Micro non accessible : ${err.message}`;
+  }
+});
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+checkStatus();
+addMsg('Hahaha… te voilà enfin. Qu\'est-ce qui t\'amuse aujourd\'hui ?', 'bot');
+inputEl.focus();
+</script>
+</body>
+</html>
